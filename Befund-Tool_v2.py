@@ -19,17 +19,24 @@ def main():
         log("Exiting application due to database connection failure.", LogLevel.ERROR)
         sys.exit(1)
     
-    editor_tab = EditorTab()
-    
-    widget = QWidget()
-    widget.setLayout(editor_tab)
-    window.setCentralWidget(widget)
+    setup_ui(window)
     
     set_log_level(LogLevel.DEBUG)
     log("Application started", LogLevel.INFO)
     
     window.show()
     sys.exit(app.exec_())
+    
+    
+
+def setup_ui(window):
+    editor_tab = EditorTab()
+    
+    widget = QWidget()
+    widget.setLayout(editor_tab)
+    window.setCentralWidget(widget)
+    return window
+
 
 
 if __name__ == "__main__":
