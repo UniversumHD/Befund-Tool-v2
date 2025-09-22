@@ -8,8 +8,6 @@ from Logger import *
 from Database_Manager import DatabaseManager
 
 def main():
-    app = QApplication(sys.argv)
-    window = MainWindow(sys.argv)
     
     db_path = os.path.join(os.path.expanduser("~"), "Library", "Application Support", "Befund-Tool", "bausteine.db")
     
@@ -19,7 +17,9 @@ def main():
         log("Exiting application due to database connection failure.", LogLevel.ERROR)
         sys.exit(1)
     
-    setup_ui(window)
+    app = QApplication(sys.argv)
+    window = MainWindow(sys.argv)
+    setup_ui(window, db_manager)
     
     set_log_level(LogLevel.DEBUG)
     log("Application started", LogLevel.INFO)
@@ -29,8 +29,8 @@ def main():
     
     
 
-def setup_ui(window):
-    editor_tab = EditorTab()
+def setup_ui(window, db_manager):
+    editor_tab = EditorTab(db_manager)
     
     widget = QWidget()
     widget.setLayout(editor_tab)
