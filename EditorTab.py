@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import (QVBoxLayout, QLineEdit, QComboBox, QPlainTextEdit, 
-                             QPushButton, QLabel, QHBoxLayout)
+from PyQt5.QtWidgets import (QVBoxLayout, QLineEdit, QComboBox, QPlainTextEdit, QPushButton, QLabel, QHBoxLayout)
 from BefundEditor import BefundEditor
 
 from Logger import *
@@ -27,14 +26,8 @@ class EditorTab(QVBoxLayout):
         self.befundfeld.setPlaceholderText("Befunde (Kürzel mit Komma getrennt)")
         self.befundfeld.resize(200, 200)  # Größe des dritten Textfeldes anpassen
 
-        self.suchzeile_layout = QHBoxLayout()
-
-        self.befundfeld_neu = QPlainTextEdit()
-        self.befundfeld_neu.setPlaceholderText("Befund neu")
-        self.befundfeld_neu.resize(200, 200)  # Größe des neuen Textfeldes anpassen
-
         self.vorschlagfeld = QLabel()
-        self.vorschlagfeld.setText("Vorschläge: ")
+        self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
         self.vorschlagfeld.setWordWrap(True)
 
         self.erstellen_button = QPushButton("Erstellen")
@@ -44,7 +37,7 @@ class EditorTab(QVBoxLayout):
         self.clear_button.setToolTip("Leert die Eingabefelder")
         
         self.dropdown.currentIndexChanged.connect(self.on_dropdown_changed)
-        self.befundfeld.textChanged.connect(self.placeholder)
+        self.befundfeld.textChanged.connect(self.on_text_changed)
         self.erstellen_button.clicked.connect(self.create_befund)
         self.clear_button.clicked.connect(self.clear_fields)
         
@@ -88,6 +81,10 @@ class EditorTab(QVBoxLayout):
         name = self.namensfeld.text().strip()
         geburtsdatum = self.geburtstagsfeld.text().strip()
         
+        if not name or not geburtsdatum:
+            log("Name und Geburtsdatum müssen ausgefüllt sein", LogLevel.NOTIFICATION)
+            return
+        
         self.db_manager.append_to_history(name, geburtsdatum, text)
         self.fill_dropdown()
         self.namensfeld.clear()
@@ -125,3 +122,23 @@ class EditorTab(QVBoxLayout):
         self.geburtstagsfeld.clear()
         self.befundfeld.clear()
         log("Cleared input fields", LogLevel.INFO)
+        
+    def on_text_changed(self):
+        text = self.befundfeld.toPlainText().lower()
+        if not text:
+            self.current_suggestion = ""
+            self.befundfeld.set_current_suggestion(self.current_suggestion)
+            self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
+            return
+        kuerzel_list = [k.strip() for k in text.split(",") if k.strip()]
+        available_kuerzel = self.db_manager.get_available_kuerzel()
+        suggestions = []
+        for kuerzel in available_kuerzel:
+            if kuerzel.lower().startswith(kuerzel_list[-1]) and kuerzel not in kuerzel_list:
+                suggestions.append(kuerzel)
+        suggestions = suggestions[:9]  # nur die ersten 5 Vorschläge nehmen
+        suggestion = ", ".join(suggestions)
+        self.current_suggestion = suggestion
+        self.befundfeld.set_current_suggestion(self.current_suggestion)
+        self.vorschlagfeld.setText(f"{self.current_suggestion}")
+        

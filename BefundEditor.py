@@ -27,4 +27,4 @@ class BefundEditor(QPlainTextEdit):
             cursor.insertText(suggestion + ", ")
 
         else:
-            super().keyPressEvent(event)  # alle anderen Tasten norma
+            super().keyPressEvent(event)  # alle anderen Tasten normal behandeln
