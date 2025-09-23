@@ -1,30 +1,52 @@
 from PyQt5.QtWidgets import QPlainTextEdit
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor
+from PyQt5 import QtCore, QtWidgets
+
+from Logger import *
 
 class BefundEditor(QPlainTextEdit):
 
-    def __init__(self, current_suggestion):
+    def __init__(self, current_suggestions):
         super().__init__()
-        self.current_suggestion = current_suggestion
+        self.current_suggestions = current_suggestions
 
-    def set_current_suggestion(self, suggestion):
-        self.current_suggestion = suggestion
+    def set_current_suggestions(self, suggestions):
+        self.current_suggestions = suggestions
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            # Aktuelles Wort austauschen
-            suggestion = self.current_suggestion
-            cursor = self.textCursor()
-            cursor.select(QTextCursor.WordUnderCursor)
-            current_word = cursor.selectedText()
-            if len(current_word) == 0:
-                return
+        if event.key() == Qt.Key_Shift:
+            event.ignore()
+            return
+        # Filter out Shift+Number keys
+        if event.text() in "!\"§$%&/()":
+            # get index of the number pressed
+            index = "!\"§$%&/()".index(event.text())
+            log(f"Index of suggestion to insert: {index+1}", LogLevel.DEBUG)
             
-            cursor.removeSelectedText()
-                
-            
-            cursor.insertText(suggestion + ", ")
-
+            self.insert_suggestion(index)  # Convert to 0-based index
+        elif event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
+            self.insert_suggestion(0)  # Insert the first suggestion
         else:
-            super().keyPressEvent(event)  # alle anderen Tasten normal behandeln
+            super().keyPressEvent(event)
+            
+    def insert_suggestion(self, index):
+        if 0 <= index < len(self.current_suggestions):
+            suggestion = self.current_suggestions[index]
+            cursor = self.textCursor()
+            text = self.toPlainText()
+            last_comma = text.rfind(',')
+            if last_comma == -1:
+                new_text = suggestion + ", "
+            else:
+                new_text = text[:last_comma + 1] + " " + suggestion + ", "
+            self.setPlainText(new_text)
+            cursor.setPosition(len(new_text))
+            self.setTextCursor(cursor)
+            log(f"Inserted suggestion: {suggestion}", LogLevel.INFO)
+        else:
+            log(f"Invalid suggestion index: {index}", LogLevel.WARNING)
+        
+        #trigger text changed event
+        self.textChanged.emit()
+        

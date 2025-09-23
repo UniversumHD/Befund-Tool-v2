@@ -1,7 +1,9 @@
 from PyQt5.QtWidgets import (QVBoxLayout, QLineEdit, QComboBox, QPlainTextEdit, QPushButton, QLabel, QHBoxLayout)
-from BefundEditor import BefundEditor
 
+from BefundEditor import BefundEditor
 from Logger import *
+from WordHighlighter import WordHighlighter
+
 
 class EditorTab(QVBoxLayout):
     def __init__(self, db_manager):
@@ -21,8 +23,7 @@ class EditorTab(QVBoxLayout):
         self.geburtstagsfeld = QLineEdit()
         self.geburtstagsfeld.setPlaceholderText("Geburtsdatum")
 
-        self.current_suggestion = ""
-        self.befundfeld = BefundEditor(self.current_suggestion)
+        self.befundfeld = BefundEditor([])
         self.befundfeld.setPlaceholderText("Befunde (Kürzel mit Komma getrennt)")
         self.befundfeld.resize(200, 200)  # Größe des dritten Textfeldes anpassen
 
@@ -124,10 +125,16 @@ class EditorTab(QVBoxLayout):
         log("Cleared input fields", LogLevel.INFO)
         
     def on_text_changed(self):
+        # if character under cursor is a comma or space, do not update suggestions
+        char = self.befundfeld.textCursor().document().characterAt(self.befundfeld.textCursor().position() - 1)
+        if char in [',', ' ']:
+            self.befundfeld.set_current_suggestions([])
+            self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
+            return
+        
         text = self.befundfeld.toPlainText().lower()
         if not text:
-            self.current_suggestion = ""
-            self.befundfeld.set_current_suggestion(self.current_suggestion)
+            self.befundfeld.set_current_suggestions([])
             self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
             return
         kuerzel_list = [k.strip() for k in text.split(",") if k.strip()]
@@ -136,9 +143,16 @@ class EditorTab(QVBoxLayout):
         for kuerzel in available_kuerzel:
             if kuerzel.lower().startswith(kuerzel_list[-1]) and kuerzel not in kuerzel_list:
                 suggestions.append(kuerzel)
-        suggestions = suggestions[:9]  # nur die ersten 5 Vorschläge nehmen
-        suggestion = ", ".join(suggestions)
-        self.current_suggestion = suggestion
-        self.befundfeld.set_current_suggestion(self.current_suggestion)
-        self.vorschlagfeld.setText(f"{self.current_suggestion}")
+        suggestions = suggestions[:9]  # nur die ersten 9 Vorschläge nehmen
+        # Format: [1] kuerzel1, [2] kuerzel2, ...
+        suggestion = ", ".join([f"[{i+1}] {k}" for i, k in enumerate(suggestions)])
+        self.befundfeld.set_current_suggestions(suggestions)
+        self.vorschlagfeld.setText(f"{suggestion}" if suggestion else "Keine Vorschläge")
         
+        self.set_highlights()
+        
+    def set_highlights(self):
+        available_kuerzel = self.db_manager.get_available_kuerzel()
+        
+        self.highlighter = WordHighlighter(self.befundfeld.document(), available_kuerzel)
+        self.befundfeld.show()
