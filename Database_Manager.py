@@ -68,3 +68,17 @@ class DatabaseManager:
         if results:
             return results[0]
         return None
+    
+    def get_bausteine(self):
+        query = "SELECT * FROM bausteine"
+        results = self.execute_query(query)
+        if results is not None:
+            return results
+        return []
+    
+    def get_kategorien(self):
+        query = "SELECT * FROM kategorien"
+        results = self.execute_query(query)
+        if results is not None:
+            return results
+        return []

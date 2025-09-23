@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QVBoxLayout, QLineEdit, QComboBox, QPlainTextEdit, 
 from BefundEditor import BefundEditor
 from Logger import *
 from WordHighlighter import WordHighlighter
-
+from PDFCreator import PDFCreator
 
 class EditorTab(QVBoxLayout):
     def __init__(self, db_manager):
@@ -25,7 +25,7 @@ class EditorTab(QVBoxLayout):
 
         self.befundfeld = BefundEditor([])
         self.befundfeld.setPlaceholderText("Befunde (Kürzel mit Komma getrennt)")
-        self.befundfeld.resize(200, 200)  # Größe des dritten Textfeldes anpassen
+        self.befundfeld.resize(200, 100)
 
         self.vorschlagfeld = QLabel()
         self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
@@ -86,14 +86,28 @@ class EditorTab(QVBoxLayout):
             log("Name und Geburtsdatum müssen ausgefüllt sein", LogLevel.NOTIFICATION)
             return
         
-        self.db_manager.append_to_history(name, geburtsdatum, text)
-        self.fill_dropdown()
-        self.namensfeld.clear()
-        self.geburtstagsfeld.clear()
-        self.befundfeld.clear()
-        
-        log(f"Das Erstellen Feature is not fully implemented yet.", LogLevel.WARNING)
-        log(f"Das Erstellen Feature is not fully implemented yet.", LogLevel.NOTIFICATION)
+        try:
+            directory = self.choose_directory()
+            if not directory:
+                log("Kein Verzeichnis ausgewählt. Abbruch.", LogLevel.NOTIFICATION)
+                return
+            pdf_creator = PDFCreator(self.db_manager)
+            pdf_creator.create_latex(name, geburtsdatum, kuerzel_list, directory)
+            log(f"Befund für {name} erstellt und im Verzeichnis {directory} gespeichert.", LogLevel.NOTIFICATION)
+            log(f"Befund für {name} erstellt und im Verzeichnis {directory} gespeichert.", LogLevel.INFO)
+            
+            self.db_manager.append_to_history(name, geburtsdatum, text)
+            self.fill_dropdown()
+            self.namensfeld.clear()
+            self.geburtstagsfeld.clear()
+            self.befundfeld.clear()
+            self.befundfeld.set_current_suggestions([])
+            self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
+        except Exception as e:
+            log(f"Fehler beim Erstellen des Befunds: {e}", LogLevel.ERROR)
+            log("Fehler beim Erstellen des Befunds. Siehe Log für Details.", LogLevel.NOTIFICATION)
+            return
+
         
     def fill_dropdown(self):
         history = self.db_manager.get_history()
@@ -156,3 +170,12 @@ class EditorTab(QVBoxLayout):
         
         self.highlighter = WordHighlighter(self.befundfeld.document(), available_kuerzel)
         self.befundfeld.show()
+        
+    def choose_directory(self):
+        from PyQt5.QtWidgets import QFileDialog
+        if hasattr(self, 'prev_path'):
+            directory = QFileDialog.getExistingDirectory(self.parent(), "Verzeichnis auswählen", self.prev_path)
+        else:
+            directory = QFileDialog.getExistingDirectory(self.parent(), "Verzeichnis auswählen")
+            self.prev_path = directory
+        return directory

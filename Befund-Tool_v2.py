@@ -1,11 +1,12 @@
 import sys, os
 
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QTabWidget
 
 from MainWindow import MainWindow
 from EditorTab import EditorTab
 from Logger import *
 from Database_Manager import DatabaseManager
+from Baustein_Table_Tab import BausteinTableTab
 
 def main():
     
@@ -31,10 +32,18 @@ def main():
 
 def setup_ui(window, db_manager):
     editor_tab = EditorTab(db_manager)
+    baustein_tabelle_tab = BausteinTableTab(db_manager)
     
-    widget = QWidget()
-    widget.setLayout(editor_tab)
-    window.setCentralWidget(widget)
+    editor_widget = QWidget()
+    editor_widget.setLayout(editor_tab)
+    baustein_tabelle_widget = QWidget()
+    baustein_tabelle_widget.setLayout(baustein_tabelle_tab)
+    
+    tabs = QTabWidget()
+    tabs.addTab(editor_widget, "Editor")
+    tabs.addTab(baustein_tabelle_widget, "Bausteine verwalten")
+    
+    window.setCentralWidget(tabs)
     return window
 
 
