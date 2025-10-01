@@ -82,3 +82,23 @@ class DatabaseManager:
         if results is not None:
             return results
         return []
+    
+    def update_baustein(self, baustein_id, kuerzel, text, kategorie_id):
+        query = "UPDATE bausteine SET kuerzel = ?, text = ?, kategorie = ? WHERE id = ?"
+        self.execute_query(query, (kuerzel, text, kategorie_id, baustein_id))
+        log(f"Updated baustein ID {baustein_id}: {kuerzel}", LogLevel.NOTIFICATION)
+        
+    def add_baustein(self, kuerzel, text, kategorie_name):
+        # Get or create category
+        query = "SELECT id FROM kategorien WHERE name = ?"
+        results = self.execute_query(query, (kategorie_name,))
+        if results:
+            kategorie_id = results[0][0]
+        else:
+            log(f"Category '{kategorie_name}' not found.", LogLevel.NOTIFICATION)
+            return
+        
+        # Insert baustein
+        insert_baustein_query = "INSERT INTO bausteine (kuerzel, text, kategorie) VALUES (?, ?, ?)"
+        self.execute_query(insert_baustein_query, (kuerzel, text, kategorie_id))
+        log(f"Added new Baustein: {kuerzel}", LogLevel.NOTIFICATION)
