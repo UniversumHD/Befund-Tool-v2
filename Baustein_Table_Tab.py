@@ -43,10 +43,12 @@ class BausteinTableTab(QVBoxLayout):
     def load_bausteine(self):
         bausteine = self.db_manager.get_bausteine()
         kategorien = self.db_manager.get_kategorien()
+        log(f"{kategorien}")
         self.table.setRowCount(0)
         for baustein in bausteine:
             row_position = self.table.rowCount()
             self.table.insertRow(row_position)
+            log(f"Loading baustein: {baustein}", LogLevel.DEBUG)
             self.table.setItem(row_position, 0, QTableWidgetItem(str(baustein[0])))
             self.table.setItem(row_position, 1, QTableWidgetItem(baustein[3]))
             self.table.setItem(row_position, 2, QTableWidgetItem(baustein[2]))
@@ -96,14 +98,17 @@ class BausteinTableTab(QVBoxLayout):
         self.dialog = InputDialog("Baustein bearbeiten", ["ID:", "Kürzel:", "Text:", "Kategorie:"], current_values)
         if self.dialog.exec_() == QDialog.Accepted:
             inputs = self.dialog.get_inputs()
-            kuerzel = self.db_manager.get_available_kuerzel()
+            kuerzels = self.db_manager.get_available_kuerzel()
             log(f"User inputs for editing: {inputs}", LogLevel.DEBUG)
             baustein_id = int(inputs[0])
             kuerzel = inputs[1]
             text = inputs[2]
             kategorie = inputs[3]
+            kategorie = self.db_manager.kategorie_to_id(kategorie)
+            
             self.db_manager.update_baustein(baustein_id, kuerzel, text, kategorie)
             self.load_bausteine()
         
     def delete_baustein(self):
         log("Not implemented yet", LogLevel.NOTIFICATION)
+        

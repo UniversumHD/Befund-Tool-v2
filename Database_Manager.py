@@ -102,3 +102,10 @@ class DatabaseManager:
         insert_baustein_query = "INSERT INTO bausteine (kuerzel, text, kategorie) VALUES (?, ?, ?)"
         self.execute_query(insert_baustein_query, (kuerzel, text, kategorie_id))
         log(f"Added new Baustein: {kuerzel}", LogLevel.NOTIFICATION)
+        
+    def kategorie_to_id(self, kategorie_name):
+        query = "SELECT id FROM kategorien WHERE name = ?"
+        results = self.execute_query(query, (kategorie_name,))
+        if results:
+            return results[0][0]
+        return 0
