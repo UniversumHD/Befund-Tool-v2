@@ -50,6 +50,7 @@ class InputDialog(QDialog):
             else:
                 inputs.append(input_widget.text())  # Text from QLineEdit
         return inputs
+    
 
 # Example usage:
 # dialog = InputDialog("Baustein bearbeiten", ["Kürzel:", "Text:", "Kategorie:"], ["KZ1", "Beispieltext", "Kategorie1"])
