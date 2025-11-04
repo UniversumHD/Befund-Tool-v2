@@ -7,6 +7,7 @@ from EditorTab import EditorTab
 from Logger import *
 from Database_Manager import DatabaseManager
 from Baustein_Table_Tab import BausteinTableTab
+from Kategorien_Tab import KategorienTab
 
 def main():
     
@@ -33,15 +34,19 @@ def main():
 def setup_ui(window, db_manager):
     editor_tab = EditorTab(db_manager)
     baustein_tabelle_tab = BausteinTableTab(db_manager)
+    kategorien_tab = KategorienTab(db_manager)
     
     editor_widget = QWidget()
     editor_widget.setLayout(editor_tab)
     baustein_tabelle_widget = QWidget()
     baustein_tabelle_widget.setLayout(baustein_tabelle_tab)
+    kategorien_widget = QWidget()
+    kategorien_widget.setLayout(kategorien_tab)
     
     tabs = QTabWidget()
     tabs.addTab(editor_widget, "Editor")
     tabs.addTab(baustein_tabelle_widget, "Bausteine verwalten")
+    tabs.addTab(kategorien_widget, "Kategorien verwalten")
     
     window.setCentralWidget(tabs)
     return window
