@@ -128,3 +128,9 @@ class DatabaseManager:
         except Exception as e:
             log(f"Failed to create database backup: {e}", LogLevel.ERROR)
             log("Fehler beim Erstellen des Backups. Siehe Log für Details.", LogLevel.NOTIFICATION)
+            
+    
+    def add_kategorie(self, name):
+        query = "INSERT INTO kategorien (name) VALUES (?)"
+        self.execute_query(query, (name,))
+        log(f"Added new Kategorie: {name}", LogLevel.NOTIFICATION)

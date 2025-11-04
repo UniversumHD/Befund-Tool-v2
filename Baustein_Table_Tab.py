@@ -54,10 +54,15 @@ class BausteinTableTab(QVBoxLayout):
             row_position = self.table.rowCount()
             self.table.insertRow(row_position)
             log(f"Loading baustein: {baustein}", LogLevel.DEBUG)
+            kat_index = 0
+            for i in range(len(kategorien)):
+                if kategorien[i][0] == baustein[1]:
+                    kat_index = i
+                    break
             self.table.setItem(row_position, 0, QTableWidgetItem(str(baustein[0])))
             self.table.setItem(row_position, 1, QTableWidgetItem(baustein[3]))
             self.table.setItem(row_position, 2, QTableWidgetItem(baustein[2]))
-            self.table.setItem(row_position, 3, QTableWidgetItem(kategorien[baustein[1]][1]))
+            self.table.setItem(row_position, 3, QTableWidgetItem(kategorien[kat_index][1]))
 
     def on_cell_clicked(self, row, column):
         if row >= 0:
