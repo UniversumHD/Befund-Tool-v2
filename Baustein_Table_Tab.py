@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
 )
 from Logger import *
 from Input_Dialog import InputDialog
+from Confirm_Dialog import ConfirmDialog
 
 class BausteinTableTab(QVBoxLayout):
     def __init__(self, db_manager):
@@ -18,6 +19,9 @@ class BausteinTableTab(QVBoxLayout):
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.cellClicked.connect(self.on_cell_clicked)
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
 
         self.add_button = QPushButton("Baustein hinzufügen")
         self.add_button.clicked.connect(self.add_baustein)
@@ -110,5 +114,14 @@ class BausteinTableTab(QVBoxLayout):
             self.load_bausteine()
         
     def delete_baustein(self):
-        log("Not implemented yet", LogLevel.NOTIFICATION)
+        row = self.table.currentRow()
+        if row < 0 or row >= self.table.rowCount():
+            log("No row selected for deletion", LogLevel.WARNING)
+            log("Please select a row to delete.", LogLevel.NOTIFICATION)
+            return
+        id = int(self.table.item(row, 0).text())
+        self.dialog = ConfirmDialog("Baustein löschen", f"Sind Sie sicher, dass Sie den Baustein mit ID {id} löschen möchten?")
+        if self.dialog.exec_() == QDialog.Accepted:
+            self.db_manager.delete_baustein(id)
+            self.load_bausteine()
         
