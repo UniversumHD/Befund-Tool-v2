@@ -9,10 +9,25 @@ class DatabaseManager:
             self.db_path = db_path
             self.db_connection = sqlite3.connect(db_path)
         else:
-            log(f"Database file {db_path} does not exist.", LogLevel.ERROR)
-            log("Failed to connect to the database.", LogLevel.NOTIFICATION)
-            self.db_connection = None
-
+            log(f"Database file {db_path} does not exist.", LogLevel.WARNING)
+            self.create_database("schema.sql", db_path)
+            self.db_path = db_path
+            self.db_connection = sqlite3.connect(db_path)
+            
+    def create_database(self, schema_path, db_path="bausteine.db"):
+        try:
+            with open(schema_path, 'r') as f:
+                schema = f.read()
+            self.db_connection = sqlite3.connect(db_path)
+            cursor = self.db_connection.cursor()
+            cursor.executescript(schema)
+            self.db_connection.commit()
+            log(f"Database created at {db_path} using schema {schema_path}", LogLevel.INFO)
+        except Exception as e:
+            log(f"Failed to create database: {e}", LogLevel.ERROR)
+            log("Fehler beim Erstellen der Datenbank. Siehe Log für Details.", LogLevel.NOTIFICATION)
+    
+        
     def execute_query(self, query, params=()):
         if self.db_connection:
             cursor = self.db_connection.cursor()
