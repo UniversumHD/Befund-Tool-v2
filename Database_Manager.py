@@ -109,3 +109,22 @@ class DatabaseManager:
         if results:
             return results[0][0]
         return 0
+    
+    def delete_baustein(self, baustein_id):
+        query = "DELETE FROM bausteine WHERE id = ?"
+        self.execute_query(query, (baustein_id,))
+        log(f"Deleted baustein ID {baustein_id}", LogLevel.NOTIFICATION)
+        
+    def create_backup(self, backup_path):
+        try:
+            if self.db_connection:
+                self.db_connection.commit()  # Ensure all changes are saved
+                self.db_connection.close()   # Close the connection to avoid locks
+            import shutil
+            shutil.copyfile(self.db_path, backup_path + f"/bausteine_backup.db")
+            log(f"Database backup created at {backup_path}", LogLevel.NOTIFICATION)
+            # Reopen the connection
+            self.db_connection = sqlite3.connect(self.db_path)
+        except Exception as e:
+            log(f"Failed to create database backup: {e}", LogLevel.ERROR)
+            log("Fehler beim Erstellen des Backups. Siehe Log für Details.", LogLevel.NOTIFICATION)

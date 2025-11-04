@@ -19,7 +19,7 @@ def main():
         sys.exit(1)
     
     app = QApplication(sys.argv)
-    window = MainWindow(sys.argv)
+    window = MainWindow(db_manager)
     setup_ui(window, db_manager)
     
     set_log_level(LogLevel.DEBUG)

@@ -159,7 +159,7 @@ class EditorTab(QVBoxLayout):
                 suggestions.append(kuerzel)
         suggestions = suggestions[:9]  # nur die ersten 9 Vorschläge nehmen
         # Format: [1] kuerzel1, [2] kuerzel2, ...
-        suggestion = ", ".join([f"[{i+1}] {k}" for i, k in enumerate(suggestions)])
+        suggestion = ", ".join([f" [↑{i+1}]: {k}" for i, k in enumerate(suggestions)])
         self.befundfeld.set_current_suggestions(suggestions)
         self.vorschlagfeld.setText(f"{suggestion}" if suggestion else "Keine Vorschläge")
         
