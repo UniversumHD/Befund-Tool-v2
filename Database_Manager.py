@@ -1,6 +1,6 @@
 import sqlite3
 import os
-
+import sys
 from Logger import *
 
 class DatabaseManager:
@@ -10,7 +10,7 @@ class DatabaseManager:
             self.db_connection = sqlite3.connect(db_path)
         else:
             log(f"Database file {db_path} does not exist.", LogLevel.WARNING)
-            self.create_database("schema.sql", db_path)
+            self.create_database(self.get_resource_path("schema.sql"), db_path)
             self.db_path = db_path
             self.db_connection = sqlite3.connect(db_path)
             
@@ -27,6 +27,15 @@ class DatabaseManager:
             log(f"Failed to create database: {e}", LogLevel.ERROR)
             log("Fehler beim Erstellen der Datenbank. Siehe Log für Details.", LogLevel.NOTIFICATION)
     
+    def get_resource_path(self, relative_path):
+        """Gibt den absoluten Pfad zur Ressource zurück, funktioniert für dev und PyInstaller."""
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller: Ressource ist im temporären Verzeichnis
+            return os.path.join(sys._MEIPASS, relative_path)
+        else:
+            # Entwicklungsumgebung: Ressource ist im aktuellen Verzeichnis
+            return os.path.abspath(relative_path)
+
         
     def execute_query(self, query, params=()):
         if self.db_connection:
