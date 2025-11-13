@@ -82,7 +82,8 @@ class BausteinTableTab(QVBoxLayout):
         return (id, kuerzel, text, kategorie)
             
     def add_baustein(self, values = None):
-        self.dialog = InputDialog("Baustein hinzufügen", ["ID:", "Kürzel:", "Text:", "Kategorie:"], values)
+        categories = [kat[1] for kat in self.db_manager.get_kategorien()]
+        self.dialog = InputDialog("Baustein hinzufügen", ["ID:", "Kürzel:", "Text:", "Kategorie:"], categories, values)
         if self.dialog.exec_() == QDialog.Accepted:
             kuerzel = self.db_manager.get_available_kuerzel()
             if self.dialog.inputs[0].text() in kuerzel:
@@ -105,7 +106,8 @@ class BausteinTableTab(QVBoxLayout):
         if current_values is None:
             log("Failed to retrieve current values for editing", LogLevel.ERROR)
             return
-        self.dialog = InputDialog("Baustein bearbeiten", ["ID:", "Kürzel:", "Text:", "Kategorie:"], current_values)
+        categories = [kat[1] for kat in self.db_manager.get_kategorien()]
+        self.dialog = InputDialog("Baustein bearbeiten", ["ID:", "Kürzel:", "Text:", "Kategorie:"], categories, current_values)
         if self.dialog.exec_() == QDialog.Accepted:
             inputs = self.dialog.get_inputs()
             kuerzels = self.db_manager.get_available_kuerzel()
