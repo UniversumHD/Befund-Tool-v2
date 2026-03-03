@@ -23,7 +23,7 @@ def main():
     window = MainWindow(db_manager)
     setup_ui(window, db_manager)
     
-    set_log_level(LogLevel.DEBUG)
+    set_log_level(LogLevel.INFO)
     log("Application started", LogLevel.INFO)
     
     window.show()

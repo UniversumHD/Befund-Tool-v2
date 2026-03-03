@@ -94,7 +94,7 @@ class DatabaseManager:
         return None
     
     def get_bausteine(self):
-        query = "SELECT * FROM bausteine"
+        query = "SELECT * FROM bausteine ORDER BY kuerzel"
         results = self.execute_query(query)
         if results is not None:
             return results
