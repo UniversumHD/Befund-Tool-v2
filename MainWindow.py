@@ -7,7 +7,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.db_manager = db_manager
         self.configure_menu_bar()
-        self.setWindowTitle("Befund-Tool v2")
+        self.setWindowTitle("Befund-Tool v2.2.2")
         self.setGeometry(100, 100, 800, 600)
         
         
