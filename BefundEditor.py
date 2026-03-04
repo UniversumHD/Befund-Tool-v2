@@ -19,7 +19,7 @@ class BefundEditor(QPlainTextEdit):
             event.ignore()
             return
         # Filter out Shift+Number keys
-        if event.text() in "!\"§$%&/()":
+        if event.text() and event.text() in "!\"§$%&/()":
             # get index of the number pressed
             index = "!\"§$%&/()".index(event.text())
             log(f"Index of suggestion to insert: {index+1}", LogLevel.DEBUG)
@@ -50,3 +50,18 @@ class BefundEditor(QPlainTextEdit):
         #trigger text changed event
         self.textChanged.emit()
         
+        
+    def get_currently_marked_kuerzel(self):
+        ## return the kuerzel that the cursor is currently on
+        cursor = self.textCursor()
+        text = self.toPlainText()
+        pos = cursor.position()
+        
+        kuerzel = text.split(", ")
+        length = 0
+        for k in kuerzel:
+            k = k.strip()
+            length += len(k)
+            if length >= pos:
+                return k
+            length += 2 # for the comma and space

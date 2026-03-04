@@ -5,7 +5,7 @@ class PDFCreator:
     def __init__(self, db_manager):
         self.db_manager = db_manager
 
-    def create_latex(self, name, geburtsdatum, befunde, path):
+    def create_latex(self, name, geburtsdatum, befunde, path, tmp_edit=False):
 
         bausteine = self.db_manager.get_bausteine()
         
@@ -27,6 +27,9 @@ class PDFCreator:
         for befund in befunde:
             for baustein in bausteine:
                 id, kategorie, text, kuerzel = baustein
+                for k, tmp_text in tmp_edit.items():
+                    if k == kuerzel:
+                        text = tmp_text
                 if kuerzel == befund:
                     clean = re.sub(r'[\u00B2\u00B3\u2070-\u209F\u202F]', '', text)
                     template = template.replace(f"%item%", "\item " + clean + f"\n %item%")
