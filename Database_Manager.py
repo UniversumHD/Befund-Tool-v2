@@ -107,6 +107,13 @@ class DatabaseManager:
             return results
         return []
     
+    def get_baustein_text(self, kuerzel):
+        query = "SELECT text FROM bausteine WHERE kuerzel = ?"
+        results = self.execute_query(query, (kuerzel,))
+        if results:
+            return results[0][0]
+        return ""
+    
     def update_baustein(self, baustein_id, kuerzel, text, kategorie_id):
         query = "UPDATE bausteine SET kuerzel = ?, text = ?, kategorie = ? WHERE id = ?"
         self.execute_query(query, (kuerzel, text, kategorie_id, baustein_id))

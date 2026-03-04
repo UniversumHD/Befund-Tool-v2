@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import (QVBoxLayout, QLineEdit, QComboBox, QPlainTextEdit, QPushButton, QLabel, QHBoxLayout)
+from PyQt5.QtWidgets import (QVBoxLayout, QLineEdit, QComboBox, QPlainTextEdit, QPushButton, QLabel, QHBoxLayout, QDialog)
 
 from BefundEditor import BefundEditor
+from TMP_Edit_Dialog import TmpEditDialog
 from Logger import *
 from WordHighlighter import WordHighlighter
 from PDFCreator import PDFCreator
@@ -13,6 +14,9 @@ class EditorTab(QVBoxLayout):
         
         
     def setup_ui(self):
+        
+        self.tmp_edits = {}  # Dictionary to store temporary edits for bausteins
+        
         self.namensfeld = QLineEdit()
         self.namensfeld.setPlaceholderText("Name Patient")
 
@@ -30,6 +34,12 @@ class EditorTab(QVBoxLayout):
         self.vorschlagfeld = QLabel()
         self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
         self.vorschlagfeld.setWordWrap(True)
+        self.vorschlagfeld.setStyleSheet("max-width: 500px; min-width: 500px;")
+        
+        self.tmp_edit_button = QPushButton("Baustein eimalig editieren")
+        self.tmp_edit_button.setToolTip("Ermöglicht eine einmalige Veränderung des Textes des markierten Bausteins für besondere Fälle, ohne den Urstprünglichen Baustein zu verändern")
+        self.tmp_edit_button.setEnabled(True)
+        self.tmp_edit_button.clicked.connect(self.open_tmp_edit_dialog)
 
         self.erstellen_button = QPushButton("Erstellen")
         self.erstellen_button.setToolTip("Erstellt einen neuen Befund")
@@ -45,12 +55,18 @@ class EditorTab(QVBoxLayout):
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.namensfeld)
         top_layout.addWidget(self.geburtstagsfeld)
+        
+        nebeneinander = QHBoxLayout()
+        nebeneinander.addWidget(self.vorschlagfeld)
+        nebeneinander.addWidget(self.tmp_edit_button)
 
         topleft_layout = QVBoxLayout()
         topleft_layout.addWidget(self.dropdown) 
         topleft_layout.addLayout(top_layout)
         topleft_layout.addWidget(self.befundfeld)
-        topleft_layout.addWidget(self.vorschlagfeld)
+        #topleft_layout.addWidget(self.vorschlagfeld)
+        #topleft_layout.addWidget(self.tmp_edit_button)
+        topleft_layout.addLayout(nebeneinander)
         topleft_layout.addWidget(self.erstellen_button)
         topleft_layout.addWidget(self.clear_button)
 
@@ -92,7 +108,7 @@ class EditorTab(QVBoxLayout):
                 log("Kein Verzeichnis ausgewählt. Abbruch.", LogLevel.NOTIFICATION)
                 return
             pdf_creator = PDFCreator(self.db_manager)
-            pdf_creator.create_latex(name, geburtsdatum, kuerzel_list, directory)
+            pdf_creator.create_latex(name, geburtsdatum, kuerzel_list, directory, self.tmp_edits)
             log(f"Befund für {name} erstellt und im Verzeichnis {directory} gespeichert.", LogLevel.NOTIFICATION)
             log(f"Befund für {name} erstellt und im Verzeichnis {directory} gespeichert.", LogLevel.INFO)
             
@@ -103,6 +119,7 @@ class EditorTab(QVBoxLayout):
             self.befundfeld.clear()
             self.befundfeld.set_current_suggestions([])
             self.vorschlagfeld.setText("Gib was ein um Vorschläge zu sehen")
+            self.tmp_edits.clear()
         except Exception as e:
             log(f"Fehler beim Erstellen des Befunds: {e}", LogLevel.ERROR)
             log("Fehler beim Erstellen des Befunds. Siehe Log für Details.", LogLevel.NOTIFICATION)
@@ -179,3 +196,16 @@ class EditorTab(QVBoxLayout):
             directory = QFileDialog.getExistingDirectory(self.parent(), "Verzeichnis auswählen")
             self.prev_path = directory
         return directory
+    
+    def open_tmp_edit_dialog(self):
+        k = self.befundfeld.get_currently_marked_kuerzel()
+        log(f"Current marked kuerzel: {k}", LogLevel.DEBUG)
+        baustein_text = self.db_manager.get_baustein_text(k)
+        for k2, tmp_text in self.tmp_edits.items():
+            if k2 == k:
+                baustein_text = tmp_text
+        dialog = TmpEditDialog("Baustein einmalig editieren", f"Neuer Text für '{k}':", baustein_text)
+        if dialog.exec_() == QDialog.Accepted:
+            new_text = dialog.get_input()
+            self.tmp_edits[k] = new_text
+            log(f"Temporary edits: {self.tmp_edits}", LogLevel.DEBUG)
