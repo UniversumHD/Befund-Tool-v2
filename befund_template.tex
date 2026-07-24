@@ -1,0 +1,29 @@
+\documentclass{exam}
+\usepackage{graphicx}
+\usepackage{hyphenat}
+\usepackage[sfdefault,lf]{carlito}
+%% The 'lf' option for lining figures
+%% The 'sfdefault' option to make the base font sans serif
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\renewcommand*\oldstylenums[1]{\carlitoOsF #1}
+
+\begin{document}
+
+\begin{flushright}
+\today
+\end{flushright}
+
+\begin{center}
+\includegraphics[]{Logo.png}
+\end{center}
+
+\section*{Befund für %Patientenname%, geboren am %Geburtsdatum%:}
+\large
+\begin{itemize}
+    %item%
+\end{itemize}
+\vspace{5mm}
+Mit freundlichen Grüßen \\[3ex]
+Dr. ABC
+\end{document}
